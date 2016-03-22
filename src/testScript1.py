@@ -20,5 +20,6 @@ contrastEnhancer.enhance(contrastFactor).show("Contrast %f" % contrastFactor)
 #im.show()
 
 
+
 if __name__ == '__main__':
     pass

@@ -13,7 +13,7 @@ def simpleSplit(inputImageMat,outputSavePath,tileW,tileH,paddingPix):
     inputImageMat - input image as a matrix (numpy 2D array)
     tileW - tile width (#pix)
     tileH - tile height (#pix)
-    paddingPix - number of pixels added to the border from the adjoining tile
+    overlap - number of pixels overlapping with the adjoining tile
     
     Output:
     output tiles are saved in the outputSavePath with file names inputFileName_tile_r000001_c000001.png
