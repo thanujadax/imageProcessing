@@ -5,6 +5,7 @@ Created on Mar 22, 2016
 '''
 
 import os
+from PIL import Image
 
 def openImages(directory):
     """ Open all the images inside the directory and return a tuple containing these images """

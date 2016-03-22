@@ -23,3 +23,5 @@ def getColumnsRows(fileNames):
     numRows = max(rows); numColumns = max(columns)
     return(numColumns, numRows)
         
+        
+        
