@@ -59,6 +59,82 @@ class Tile(object):
             return '<Tile #{} - {}>'.format(self.number, os.path.basename(self.fileName))
         return '<Tile #{}>'.format(self.number)    
                 
-            
-            
+def calcColumnsRows(n):
+    """
+    calculate the number of columns and rows to divide the an image into n parts
+    Return a tuple of integers in the format (numColumns,numRows)
+    TODO: ???
+    """
+    numColumns = int(ceil(sqrt(n)))
+    numRows = int(ceil(n / float(numColumns)))
+    return (numColumns,numRows)
+
+def getCombinedSize(tiles):
+    """
+    Calculate combined size of tiles
+    """
+    columns, rows = calcColumnsRows(len(tiles))
+    tileSize = tiles[0].image.size
+    return (tileSize[0]*columns, tileSize[1]*rows)
+    
+
+def join(tiles,imMode):
+    """
+    @param 
+    tiles - tuple of Image instances
+    imMode - imageMode (PIL):
+        L : 8-bit pixels black and white
+        RGB : 3x8-bit pixels, true color
+        RGBA : 4x8-bit pixels, true color with transparency mask
+        I : 32-bit signed integer pixels
+        F : 32 bit floating point pixels
+    @return: Image instance
+    """
+    im = Image.new(imMode, getCombinedSize(tiles), None)
+    # columns,rows = calcColumnsRows(len(tiles))
+    for tile in tiles:
+        im.paste(tile.image, tile.coords)
+    return im
+
+def saveTile(tiles, prefix='', directory, format='png'):
+    """
+    Return: tuple of :class:'Tile' instances
+    """
+    for tile in tiles:
+        tile.save(fileName=tile.generateFileName(prefix=prefix,
+                                                 directory=directory,format=format))
+    return tuple(tiles) 
+        
+def slice(fileName, numberOfTiles,save=True,prefix,outputDirectory,format='png'):
+    """
+    Split an image into a specified number of tiles
+    Inputs:
+    fileName: image to be split into tiles
+    Return: 
+    Tuple of :class:'Tile' instances
+    """
+    im = Image.open(fileName)
+    # validate image?
+    
+    imWidth, imHeight = im.size
+    columns, rows = calcColumnsRows(numberOfTiles)
+    extras = (columns*rows) - numberOfTiles 
+    tileWidth, tileHeight = int(floor(imWidth/columns)), int(floor(imHeight/rows))
+    
+    tiles = []
+    i = 1
+    for posY in range(0, imHeight - rows, tileHeight):
+        for posX in range(0, imWidth-columns, tileWidth):
+            area = (posX,posY, posX+tileWidth, posY+tileHeight)
+            image = im.crop(area)
+            position = (int(floor(posX/tileWidth))+1, int(floor(posY/tileHeight))+1)
+            coords = (posX,posY)
+            tile = Tile(image,i,position,coords)
+            tiles.append(tile)
+            i += 1
+    if save:
+        saveTile(tiles, prefix=prefix, directory=outputDirectory, format=format)
+    
+                
+
         
