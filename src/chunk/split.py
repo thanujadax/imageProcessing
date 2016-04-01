@@ -6,6 +6,7 @@ Created on Feb 12, 2016
 
 from scipy import ndimage
 
+
 def simpleSplit(inputImageMat,outputSavePath,tileW,tileH,paddingPix):
     
     '''

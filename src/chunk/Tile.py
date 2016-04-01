@@ -96,16 +96,16 @@ def join(tiles,imMode):
         im.paste(tile.image, tile.coords)
     return im
 
-def saveTile(tiles, prefix='', directory, format='png'):
+def saveTile(tiles, prefix='', directory, imgFormat='png'):
     """
     Return: tuple of :class:'Tile' instances
     """
     for tile in tiles:
         tile.save(fileName=tile.generateFileName(prefix=prefix,
-                                                 directory=directory,format=format))
+                                                 directory=directory,imgFormat=imgFormat))
     return tuple(tiles) 
         
-def slice(fileName, numberOfTiles,save=True,prefix,outputDirectory,format='png'):
+def slice(fileName, numberOfTiles,save=True,prefix,outputDirectory,imgFormat='png'):
     """
     Split an image into a specified number of tiles
     Inputs:
@@ -133,7 +133,7 @@ def slice(fileName, numberOfTiles,save=True,prefix,outputDirectory,format='png')
             tiles.append(tile)
             i += 1
     if save:
-        saveTile(tiles, prefix=prefix, directory=outputDirectory, format=format)
+        saveTile(tiles, prefix=prefix, directory=outputDirectory, imgFormat=imgFormat)
     
                 
 
