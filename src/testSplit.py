@@ -12,7 +12,8 @@ save = True
 prefix = 't'
 imgFormat = 'png'
 
-Tile.slice(inputFileName, numberOfTiles, save, prefix, outputDirectory, imgFormat)
+Tile.sliceImage(inputFileName, numberOfTiles, save, prefix, outputDirectory, imgFormat)
+
 
 
 if __name__ == '__main__':

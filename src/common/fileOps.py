@@ -7,7 +7,7 @@ Created on Mar 22, 2016
 import os
 from PIL import Image
 
-def openImages(directory):
+def openImages(inputDirectory):
     """ Open all the images inside the directory and return a tuple containing these images """
-    return [Image.open(file) for file in os.listdir(directory)]
+    return [Image.open(os.path.join(inputDirectory,imageFile)) for imageFile in os.listdir(inputDirectory)]
     

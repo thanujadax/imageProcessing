@@ -11,8 +11,6 @@ from PIL import Image
 from common import fileNameOps
 from common import fileOps
 
-
-
 class Tile(object):
     '''
     Tile
@@ -41,15 +39,15 @@ class Tile(object):
         return fileNameOps.getFileBaseName(self)
     
     def generateFileName(self,prefix='tile',
-                         ext='png',path=True):
+                         ext='png'):
         """ create file name for this tile """
-        fileName = prefix + '_{col:05d}_{row:05d}.{ext}'.format(col=self.column, row=self.row, ext)
+        fileName = prefix + '_{col:05d}_{row:05d}.{ext}'.format(col=self.column, row=self.row, ext=ext)
         return fileName 
     
-    def save(self,directory=os.getcwd(),fileName=None, ext='png'):
+    def save(self,outputDirectory=os.getcwd(),fileName=None, ext='png'):
         if not fileName:
-            fileName = self.generateFileName(ext)
-        fullFileName = os.path.join(directory,fileName)
+            fileName = self.generateFileName(ext=ext)
+        fullFileName = os.path.join(outputDirectory,fileName)
         self.image.save(fullFileName,ext)
         self.fileName = fullFileName
         
@@ -74,14 +72,15 @@ def getCombinedSize(tiles):
     Calculate combined size of tiles
     """
     columns, rows = calcColumnsRows(len(tiles))
-    tileSize = tiles[0].image.size
+    tileSize = tiles[0].size
     return (tileSize[0]*columns, tileSize[1]*rows)
     
 
-def join(tiles,imMode):
+def join(tiles,listOfCoords,imMode):
     """
     @param 
     tiles - tuple of Image instances
+    listOfPositions - columnInd,rowInd tuples for each tile parsed from the file names
     imMode - imageMode (PIL):
         L : 8-bit pixels black and white
         RGB : 3x8-bit pixels, true color
@@ -92,20 +91,21 @@ def join(tiles,imMode):
     """
     im = Image.new(imMode, getCombinedSize(tiles), None)
     # columns,rows = calcColumnsRows(len(tiles))
-    for tile in tiles:
-        im.paste(tile.image, tile.coords)
+    for (tile,coord) in zip(tiles,listOfCoords):
+        # im.paste(tile.image, tile.coords) 
+        im.paste(tile, coord)
     return im
 
-def saveTile(tiles, prefix='', directory, imgFormat='png'):
+def saveTile(tiles, prefix='', outputDirectory=os.getcwd(), imgFormat='png'):
     """
     Return: tuple of :class:'Tile' instances
     """
     for tile in tiles:
-        tile.save(fileName=tile.generateFileName(prefix=prefix,
-                                                 directory=directory,imgFormat=imgFormat))
+        tile.save(outputDirectory=outputDirectory,fileName=tile.generateFileName(prefix=prefix,
+                                                 ext=imgFormat))
     return tuple(tiles) 
         
-def slice(fileName, numberOfTiles,save=True,prefix,outputDirectory,imgFormat='png'):
+def sliceImage(fileName, numberOfTiles,save=True,prefix='',outputDirectory=os.getcwd(),imgFormat='png',overlap=0):
     """
     Split an image into a specified number of tiles
     Inputs:
@@ -133,8 +133,22 @@ def slice(fileName, numberOfTiles,save=True,prefix,outputDirectory,imgFormat='pn
             tiles.append(tile)
             i += 1
     if save:
-        saveTile(tiles, prefix=prefix, directory=outputDirectory, imgFormat=imgFormat)
+        saveTile(tiles, prefix=prefix, outputDirectory=outputDirectory, imgFormat=imgFormat)
     
-                
+def assembleTiles(outputFileName,outputDirectory,inputDirectory,imgFormat):
+    """
+    Assembles the tiles in the inputDirectory into one composite image
+    and saves in the outputDirectory
+    """
+    tiles = fileOps.openImages(inputDirectory)
+    # tiles contain a tuple of the image tiles inside the inputDirectory
+    listOfFileNames = fileNameOps.getListOfFileNames(inputDirectory)
+    tileSize = tiles[0].size
+    listOfCoords = fileNameOps.getTileCoordsFromNames(listOfFileNames,tileSize)
+    image = join(tiles=tiles,listOfCoords=listOfCoords, imMode='L')
+    fullFileName = os.path.join(outputDirectory,outputFileName)
+    image.save(fp=fullFileName, format=imgFormat)
+
+                    
 
         
