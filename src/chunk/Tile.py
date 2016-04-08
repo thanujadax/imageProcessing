@@ -67,18 +67,28 @@ def calcColumnsRows(n):
     numRows = int(ceil(n / float(numColumns)))
     return (numColumns,numRows)
 
-def getCombinedSize(tiles):
+def calcColumnsRowsFromTileSize(imWidth, imHeight,tileWidth,tileHeight, overlap):
+    """
+    Returns the number of columns and rows of overlapping tiles of the given size required
+    """
+    numColumns = int(ceil( (imWidth - overlap)/(tileWidth - overlap) ))
+    numRows = int(ceil( (imHeight - overlap)/(tileHeight - overlap) ))
+    
+    return (numColumns,numRows)
+
+def getCombinedSize(tiles,tileColumnsrows,overlap=0):
     """
     Calculate combined size of tiles
     """
-    columns, rows = calcColumnsRows(len(tiles))
+    # columns, rows = calcColumnsRows(len(tiles))
     tileSize = tiles[0].size
-    return (tileSize[0]*columns, tileSize[1]*rows)
+    return (tileSize[0]*tileColumnsrows[0]-overlap*(tileColumnsrows[0]-1), tileSize[1]*tileColumnsrows[1] -overlap*(tileColumnsrows[1]-1))
     
 
-def join(tiles,listOfCoords,imMode):
+def join(tileColumnsRows,tiles,listOfCoords,overlap,imMode):
     """
     @param 
+    tileColumnsRows - tuple containing (numTilesInX,numTilesInY)
     tiles - tuple of Image instances
     listOfPositions - columnInd,rowInd tuples for each tile parsed from the file names
     imMode - imageMode (PIL):
@@ -89,7 +99,7 @@ def join(tiles,listOfCoords,imMode):
         F : 32 bit floating point pixels
     @return: Image instance
     """
-    im = Image.new(imMode, getCombinedSize(tiles), None)
+    im = Image.new(imMode, getCombinedSize(tiles,tileColumnsRows,overlap), None)
     # columns,rows = calcColumnsRows(len(tiles))
     for (tile,coord) in zip(tiles,listOfCoords):
         # im.paste(tile.image, tile.coords) 
@@ -105,11 +115,12 @@ def saveTile(tiles, prefix='', outputDirectory=os.getcwd(), imgFormat='png'):
                                                  ext=imgFormat))
     return tuple(tiles) 
         
-def sliceImage(fileName, numberOfTiles,save=True,prefix='',outputDirectory=os.getcwd(),imgFormat='png',overlap=0):
+def sliceImage(fileName, tileWidth, tileHeight,save=True,prefix='',outputDirectory=os.getcwd(),imgFormat='png',overlap=0):
     """
     Split an image into a specified number of tiles
     Inputs:
-    fileName: image to be split into tiles
+    fileName - image to be split into tiles
+    tileWidth, tileHeight, overlap - in pixels 
     Return: 
     Tuple of :class:'Tile' instances
     """
@@ -117,17 +128,18 @@ def sliceImage(fileName, numberOfTiles,save=True,prefix='',outputDirectory=os.ge
     # validate image?
     
     imWidth, imHeight = im.size
-    columns, rows = calcColumnsRows(numberOfTiles)
-    extras = (columns*rows) - numberOfTiles 
-    tileWidth, tileHeight = int(floor(imWidth/columns)), int(floor(imHeight/rows))
+    # columns, rows = calcColumnsRows(numberOfTiles)
+    columns, rows = calcColumnsRowsFromTileSize(imWidth, imHeight,tileWidth,tileHeight, overlap)
+    # extras = (columns*rows) - numberOfTiles 
+    # tileWidth, tileHeight = int(floor(imWidth/columns)), int(floor(imHeight/rows))
     
     tiles = []
     i = 1
-    for posY in range(0, imHeight - rows, tileHeight):
-        for posX in range(0, imWidth-columns, tileWidth):
+    for posY in range(0, imHeight - overlap, tileHeight-overlap):
+        for posX in range(0, imWidth-overlap, tileWidth-overlap):
             area = (posX,posY, posX+tileWidth, posY+tileHeight)
             image = im.crop(area)
-            position = (int(floor(posX/tileWidth))+1, int(floor(posY/tileHeight))+1)
+            position = ( int(floor(posX/(tileWidth-overlap)))+1, int(floor(posY/(tileHeight-overlap)))+1)
             coords = (posX,posY)
             tile = Tile(image,i,position,coords)
             tiles.append(tile)
@@ -135,7 +147,7 @@ def sliceImage(fileName, numberOfTiles,save=True,prefix='',outputDirectory=os.ge
     if save:
         saveTile(tiles, prefix=prefix, outputDirectory=outputDirectory, imgFormat=imgFormat)
     
-def assembleTiles(outputFileName,outputDirectory,inputDirectory,imgFormat):
+def assembleTiles(outputFileName,outputDirectory,inputDirectory,imgFormat,overlap=0):
     """
     Assembles the tiles in the inputDirectory into one composite image
     and saves in the outputDirectory
@@ -144,11 +156,8 @@ def assembleTiles(outputFileName,outputDirectory,inputDirectory,imgFormat):
     # tiles contain a tuple of the image tiles inside the inputDirectory
     listOfFileNames = fileNameOps.getListOfFileNames(inputDirectory)
     tileSize = tiles[0].size
-    listOfCoords = fileNameOps.getTileCoordsFromNames(listOfFileNames,tileSize)
-    image = join(tiles=tiles,listOfCoords=listOfCoords, imMode='L')
+    listOfCoords,tileColumnsRows = fileNameOps.getTileCoordsFromNames(listOfFileNames,tileSize,overlap)
+    image = join(tileColumnsRows,tiles=tiles,listOfCoords=listOfCoords,overlap=overlap,imMode='L')
     fullFileName = os.path.join(outputDirectory,outputFileName)
     image.save(fp=fullFileName, format=imgFormat)
-
-                    
-
         

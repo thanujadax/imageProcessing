@@ -6,13 +6,16 @@ to test the simpleSplit function
 from chunk import Tile
 
 inputFileName = '/home/thanuja/projects/data/drosophilaLarva_ssTEM/isbiSegmentations/raw/test-volume0000.tif'
-outputDirectory = '/home/thanuja/projects/RESULTS/imageSlicer/20160401'
-numberOfTiles = 4
+outputDirectory = '/home/thanuja/projects/RESULTS/imageSlicer/20160407'
+# numberOfTiles = 4
 save = True
 prefix = 't'
 imgFormat = 'png'
+tileWidth = 270
+tileHeight = 270
+overlap = 28
 
-Tile.sliceImage(inputFileName, numberOfTiles, save, prefix, outputDirectory, imgFormat)
+Tile.sliceImage(inputFileName, tileWidth, tileHeight,save, prefix, outputDirectory, imgFormat,overlap)
 
 
 

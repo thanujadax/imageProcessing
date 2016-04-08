@@ -27,7 +27,7 @@ def getListOfFileNames(inputDirectory):
     """ Return a list containing the image file names inside inputDirectory"""
     return [ imageFileName for imageFileName in os.listdir(inputDirectory)]
         
-def getTileCoordsFromNames(fileNames,tileSize):
+def getTileCoordsFromNames(fileNames,tileSize,overlap):
     """
     When reading a set of tiles from a directory, we need the positions of the tiles to put them together into one image.
     This method parses the file names of the tiles to extract the row and column position for each tile
@@ -37,16 +37,17 @@ def getTileCoordsFromNames(fileNames,tileSize):
     
     tiles = [];
     for fileName in fileNames:
-        row, column = os.path.splitext(fileName)[0][-11:].split('_')
-        rowInd = (int(row)-1) * tileSize[1]
-        columnInd = (int(column)-1) * tileSize[0]
+        row,column = os.path.splitext(fileName)[0][-11:].split('_')
+        y = (int(row)-1) * (tileSize[1] - overlap)
+        x = (int(column)-1) * (tileSize[0] - overlap)
         tiles.append((int(row), int(column)))
-        listOfCoords.append((columnInd,rowInd))
+        listOfCoords.append((x,y))
         
-    #rows = [pos[0] for pos in tiles]; columns = [pos[1] for pos in tiles]
-    #numRows = max(rows); numColumns = max(columns)
+    rows = [pos[0] for pos in tiles]; columns = [pos[1] for pos in tiles]
+    numRows = max(rows); numColumns = max(columns)
+    tileColumnsRows = (numColumns,numRows)
     
-    return listOfCoords
+    return listOfCoords,tileColumnsRows 
     
          
         
